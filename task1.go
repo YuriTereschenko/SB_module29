@@ -9,10 +9,9 @@ import (
 
 func main() {
 	var wg sync.WaitGroup
-	in := scaner(&wg)
-	first := square(in, &wg)
-	second := product(first, &wg)
-	receiver(second, &wg)
+	firstCh := scaner(&wg)
+	secondCh := square(firstCh, &wg)
+	product(secondCh, &wg)
 
 	wg.Wait()
 }
@@ -60,31 +59,15 @@ func square(in chan int, wg *sync.WaitGroup) chan int {
 	return out
 }
 
-func product(in chan int, wg *sync.WaitGroup) chan int {
+func product(in chan int, wg *sync.WaitGroup) {
 	wg.Add(1)
-	out := make(chan int)
 	go func() {
 		defer wg.Done()
-		defer close(out)
 
 		for value := range in {
 			result := value * 2
 			fmt.Println("Product is ", result)
-			out <- result
-		}
-	}()
-	return out
-}
 
-func receiver(in chan int, wg *sync.WaitGroup) {
-	wg.Add(1)
-	go func() {
-		defer func() {
-			fmt.Println("Receiver завершил работу")
-			wg.Done()
-		}()
-		for value := range in {
-			fmt.Println("Получатель получил: ", value)
 		}
 	}()
 }
