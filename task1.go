@@ -11,7 +11,7 @@ func main() {
 	var wg sync.WaitGroup
 	in := scaner(&wg)
 	first := square(in, &wg)
-	second := mul(first, &wg)
+	second := product(first, &wg)
 	receiver(second, &wg)
 
 	wg.Wait()
@@ -21,25 +21,18 @@ func scaner(wg *sync.WaitGroup) chan int {
 	out := make(chan int)
 	wg.Add(1)
 	go func() {
-		defer func() {
-			wg.Done()
-			fmt.Println("Завершили работу scaner")
-		}()
-		defer func() {
-			close(out)
-			fmt.Println("Закрыли канал scaner")
-		}()
-		var scan string
-		var digit int
+		defer wg.Done()
+		defer close(out)
+		var scanStr string
 		for {
-			_, err := fmt.Scan(&scan)
+			_, err := fmt.Scan(&scanStr)
 			if err != nil {
 				log.Println(err)
 				continue
 			}
-			digit, err = strconv.Atoi(scan)
+			digit, err := strconv.Atoi(scanStr)
 			if err != nil {
-				if scan == "stop" {
+				if scanStr == "stop" {
 					break
 				}
 				log.Println(err)
@@ -56,38 +49,27 @@ func square(in chan int, wg *sync.WaitGroup) chan int {
 	wg.Add(1)
 	out := make(chan int)
 	go func() {
-		defer func() {
-			wg.Done()
-			fmt.Println("Завершили работу square")
-		}()
-		defer func() {
-			close(out)
-			fmt.Println("Закрыли канал square")
-		}()
+		defer wg.Done()
+		defer close(out)
 		for value := range in {
 			result := value * value
-			fmt.Println("Отработала функция square in: ", value, "out: ", result)
+			fmt.Println("Square is: ", result)
 			out <- result
 		}
 	}()
 	return out
 }
 
-func mul(in chan int, wg *sync.WaitGroup) chan int {
+func product(in chan int, wg *sync.WaitGroup) chan int {
 	wg.Add(1)
 	out := make(chan int)
 	go func() {
-		defer func() {
-			wg.Done()
-			fmt.Println("Завершили работу mul")
-		}()
-		defer func() {
-			close(out)
-			fmt.Println("Закрыли канал mul")
-		}()
+		defer wg.Done()
+		defer close(out)
+
 		for value := range in {
 			result := value * 2
-			fmt.Println("Отработала функция mul in: ", value, "out: ", result)
+			fmt.Println("Product is ", result)
 			out <- result
 		}
 	}()
