@@ -8,16 +8,18 @@ import (
 )
 
 func main() {
+	stop := false
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT)
-	go func() {
+	go func(flag *bool) {
 		<-sigChan
-		fmt.Println("выхожу из программы")
-		os.Exit(1)
-	}()
+		*flag = true
+	}(&stop)
 	i := 1
-	for {
+
+	for !stop {
 		fmt.Printf("%v^2 = %v\n", i, i*i)
 		i++
 	}
+	fmt.Println("выхожу из программы")
 }
