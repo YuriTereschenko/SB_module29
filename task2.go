@@ -4,22 +4,33 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 )
 
-func main() {
-	stop := false
-	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, syscall.SIGINT)
-	go func(flag *bool) {
-		<-sigChan
-		*flag = true
-	}(&stop)
+func naturNumSquare(wg *sync.WaitGroup, in chan os.Signal) {
+	//wg.Add(1)
+	defer wg.Done()
+	var stop os.Signal
 	i := 1
+	go func() {
+		stop = <-in
+	}()
 
-	for !stop {
-		fmt.Printf("%v^2 = %v\n", i, i*i)
+	for stop != syscall.SIGINT {
+		fmt.Printf("%v^2= %v\n", i, i*i)
 		i++
+
 	}
-	fmt.Println("выхожу из программы")
+
+}
+
+func main() {
+	var wg sync.WaitGroup
+	sigChan := make(chan os.Signal)
+	signal.Notify(sigChan, syscall.SIGINT)
+	wg.Add(1)
+	go naturNumSquare(&wg, sigChan)
+	wg.Wait()
+	fmt.Println("Выхожу из программы")
 }
