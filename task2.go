@@ -10,23 +10,23 @@ import (
 
 func naturNumSquare(wg *sync.WaitGroup, in chan os.Signal) {
 	defer wg.Done()
-	var stop os.Signal
 	i := 1
-	go func() {
-		stop = <-in
-	}()
-
-	for stop != syscall.SIGINT {
-		fmt.Printf("%v^2= %v\n", i, i*i)
-		i++
-
+calc:
+	for {
+		select {
+		case <-in:
+			break calc
+		default:
+			fmt.Printf("%v^2= %v\n", i, i*i)
+			i++
+		}
 	}
 
 }
 
 func main() {
 	var wg sync.WaitGroup
-	sigChan := make(chan os.Signal)
+	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT)
 	wg.Add(1)
 	go naturNumSquare(&wg, sigChan)
