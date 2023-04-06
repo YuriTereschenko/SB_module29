@@ -9,7 +9,6 @@ import (
 )
 
 func naturNumSquare(wg *sync.WaitGroup, in chan os.Signal) {
-	//wg.Add(1)
 	defer wg.Done()
 	var stop os.Signal
 	i := 1
